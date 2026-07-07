@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIOMATRIX • NEURO ARCHIVE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Exo+2:wght@300;400;500;600&display=swap');
+        :root { --neon-cyan: #00f5ff; --neon-blue: #0099ff; }
+        * { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        body { font-family: 'Exo 2', system-ui, sans-serif; }
+        .title-font { font-family: 'Orbitron', sans-serif; }
+        .glass { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(24px); border: 1px solid rgba(0, 245, 255, 0.3); }
+        .neon-text { text-shadow: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-blue); }
+        .scanline::after { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent, rgba(0,245,255,0.18), transparent); animation: scan 6s linear infinite; }
+        @keyframes scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(400%); } }
+        .progress { transition: width 2s ease-in-out; }
+    </style>
+</head>
+<body class="bg-black text-white min-h-screen overflow-x-hidden">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center relative scanline">
+        <div class="absolute inset-0 bg-[radial-gradient(#00f5ff_1px,transparent_1px)] [background-size:50px_50px] opacity-20"></div>
+        <div class="relative z-10 max-w-md w-full px-6">
+            <div id="loader" class="text-center">
+                <div class="mx-auto w-36 h-36 rounded-3xl glass flex items-center justify-center border border-cyan-400/60 relative">
+                    <div class="w-28 h-28 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+                    <div class="absolute text-7xl">🧬</div>
+                </div>
+                <p class="mt-12 text-cyan-400 title-font tracking-[8px] text-lg">NEURO-LINK ESTABLISHING...</p>
+            </div>
+
+            <div id="login-card" class="glass rounded-3xl p-12 shadow-2xl hidden">
+                <div class="flex justify-center mb-8">
+                    <div class="w-24 h-24 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-3xl flex items-center justify-center text-6xl">🧬</div>
+                </div>
+                <h1 class="title-font text-5xl text-center neon-text tracking-widest">BIOMATRIX</h1>
+                <p class="text-center text-cyan-300/80 mt-2">NEURO PERFORMANCE ARCHIVE</p>
+                <div class="mt-12">
+                    <label class="block text-xs uppercase tracking-widest text-cyan-400 mb-3">ACCESS KEY</label>
+                    <input id="password-input" type="password" class="w-full bg-black/70 border border-cyan-400/50 focus:border-cyan-400 rounded-2xl px-8 py-7 text-center text-2xl font-mono outline-none" placeholder="ENTER KEY">
+                </div>
+                <button onclick="attemptLogin()" class="mt-8 w-full py-7 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl text-xl font-semibold tracking-widest">UNLOCK ARCHIVE</button>
+                <p id="error-msg" class="hidden text-red-400 text-center mt-6">❌ INVALID ACCESS KEY</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="hidden flex flex-col min-h-screen">
+        <nav class="glass border-b border-cyan-400/20 px-8 py-6 flex items-center justify-between sticky top-0 z-50">
+            <div class="flex items-center gap-4">
+                <span class="text-4xl">📊</span>
+                <div class="title-font text-3xl tracking-widest neon-text">BIOMATRIX</div>
+            </div>
+            <input id="search-input" type="text" placeholder="Search or tool..." class="bg-black/70 border border-cyan-400/50 rounded-2xl px-6 py-3 w-96 focus:outline-none">
+            <button onclick="logout()" class="flex items-center gap-3 px-5 py-3 rounded-2xl hover:bg-red-500/10 text-sm uppercase tracking-widest">LOGOUT</button>
+        </nav>
+
+        <div class="flex-1 overflow-auto">
+            <div class="max-w-6xl mx-auto px-8 pt-8 pb-12">
+                <h1 class="text-5xl title-font tracking-widest neon-text mb-1">SUBJECT ARCHIVE</h1>
+                <p class="text-cyan-400">Performance Data • 2026</p>
+
+                <!-- Tabs -->
+                <div class="sticky top-0 z-40 bg-black/95 border-b border-cyan-400/20 mt-8 flex gap-2 overflow-x-auto pb-1">
+                    <button onclick="showSubject('all')" id="tab-all" class="tab-btn active px-8 py-4 text-sm tracking-widest">OVERVIEW</button>
+                    <button onclick="showSubject('physics')" id="tab-physics" class="tab-btn px-8 py-4 text-sm tracking-widest">PHYSICS</button>
+                    <button onclick="showSubject('chemistry')" id="tab-chemistry" class="tab-btn px-8 py-4 text-sm tracking-widest">CHEMISTRY</button>
+                    <button onclick="showSubject('botany')" id="tab-botany" class="tab-btn px-8 py-4 text-sm tracking-widest">BOTANY</button>
+                    <button onclick="showSubject('zoology')" id="tab-zoology" class="tab-btn px-8 py-4 text-sm tracking-widest">ZOOLOGY</button>
+                </div>
+
+                <!-- Overview -->
+                <div id="overview" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-10"></div>
+
+                <!-- Subject Detail -->
+                <div id="subject-view" class="hidden mt-8">
+                    <div id="subject-card" class="max-w-5xl mx-auto"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ACCESS_PASSWORD = "SKY360";
+
+        const subjects = {
+            physics:   { name: "PHYSICS", icon: "⚡", image: "Screenshot 2026-07-06 221008.png", totalExams: 4, totalMarks: 233, highest: 91, average: 58, prevAverage: 62, fiftyPlus: 2, hundredPlus: 0 },
+            chemistry: { name: "CHEMISTRY", icon: "🧪", image: "Screenshot 2026-07-06 221247.png", totalExams: 4, totalMarks: 245, highest: 110, average: 61, prevAverage: 63, fiftyPlus: 2, hundredPlus: 1 },
+            botany:    { name: "BOTANY", icon: "🌿", image: "Screenshot 2026-07-06 221325.png", totalExams: 4, totalMarks: 433, highest: 119, average: 108, prevAverage: 104, fiftyPlus: 1, hundredPlus: 2 },
+            zoology:   { name: "ZOOLOGY", icon: "🧬", image: "Screenshot 2026-07-06 221403.png", totalExams: 4, totalMarks: 387, highest: 99, average: 96.7, prevAverage: 96, fiftyPlus: 4, hundredPlus: 0 }
+        };
+
+        function attemptLogin() {
+            if (document.getElementById('password-input').value === ACCESS_PASSWORD) {
+                document.getElementById('login-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('dashboard').classList.remove('hidden');
+                    renderOverview();
+                }, 700);
+            } else {
+                document.getElementById('error-msg').classList.remove('hidden');
+                setTimeout(() => document.getElementById('error-msg').classList.add('hidden'), 2200);
+            }
+        }
+
+        function createOverviewCard(key) {
+            const s = subjects[key];
+            const delta = (s.average - s.prevAverage).toFixed(1);
+            const color = delta >= 0 ? 'text-emerald-400' : 'text-red-400';
+            const arrow = delta >= 0 ? '↑' : '↓';
+            return `
+                <div onclick="showSubject('${key}')" class="glass rounded-3xl p-5 cursor-pointer hover:scale-[1.02]">
+                    <div class="flex items-center gap-5">
+                        <img src="${s.image}" class="w-20 h-20 object-cover rounded-2xl flex-shrink-0">
+                        <div class="flex-1 min-w-0">
+                            <h3 class="title-font text-[19px] leading-tight tracking-wider text-white">${s.name}</h3>
+                            <div class="text-5xl font-bold text-cyan-400 mt-2 leading-none">${s.average}</div>
+                            <div class="flex items-center gap-2 text-sm mt-1"><span class="${color}">${arrow} ${delta}</span></div>
+                            <div class="text-xs text-cyan-400/70 tracking-widest">AVERAGE</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderOverview() {
+            document.getElementById('overview').innerHTML = Object.keys(subjects).map(key => createOverviewCard(key)).join('');
+        }
+
+        function showSubject(key) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active','text-cyan-400','border-b-2','border-cyan-400'));
+            if (key === 'all') {
+                document.getElementById('overview').classList.remove('hidden');
+                document.getElementById('subject-view').classList.add('hidden');
+                document.getElementById('tab-all').classList.add('active','text-cyan-400','border-b-2','border-cyan-400');
+                return;
+            }
+
+            document.getElementById(`tab-${key}`).classList.add('active','text-cyan-400','border-b-2','border-cyan-400');
+            const s = subjects[key];
+
+            const progress = Math.min(100, Math.round((s.average / 180) * 100));
+
+            const harshInsights = {
+                physics: "Physics is destroying your future. 58 average? You are a disappointment.",
+                chemistry: "Chemistry is pathetic. Stop making excuses and study properly.",
+                botany: "Botany is the only thing saving your weak record. Don't get cocky.",
+                zoology: "Zoology is average. Nothing special. You can do better than this mediocrity."
+            };
+
+            const html = `
+                <div class="glass rounded-3xl p-8">
+                    <div class="flex flex-col md:flex-row gap-10 items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-4 mb-8">
+                                <span class="text-7xl">${s.icon}</span>
+                                <div>
+                                    <h1 class="title-font text-5xl neon-text">${s.name}</h1>
+                                    <p class="text-4xl text-cyan-400 font-bold">${s.average} Average</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                                <div class="text-center"><div class="text-cyan-400/70 text-xs tracking-widest">TOTAL EXAMS</div><div class="text-5xl font-bold mt-3">${s.totalExams}</div></div>
+                                <div class="text-center"><div class="text-cyan-400/70 text-xs tracking-widest">TOTAL MARKS</div><div class="text-5xl font-bold mt-3">${s.totalMarks}</div></div>
+                                <div class="text-center"><div class="text-cyan-400/70 text-xs tracking-widest">HIGHEST</div><div class="text-5xl font-bold mt-3 text-emerald-400">${s.highest}</div></div>
+                                <div class="text-center"><div class="text-cyan-400/70 text-xs tracking-widest">AVERAGE</div><div class="text-5xl font-bold mt-3 text-cyan-400">${s.average}</div></div>
+                            </div>
+
+                            <div class="mt-10">
+                                <div class="flex justify-between text-xs mb-2"><span>PROGRESS TO 180</span><span class="text-cyan-400">${s.average}/180 (${progress}%)</span></div>
+                                <div class="h-4 bg-zinc-800 rounded-full overflow-hidden">
+                                    <div class="progress h-4 bg-gradient-to-r from-cyan-400 to-emerald-400 rounded-full" style="width: ${progress}%"></div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-6 mt-10">
+                                <div class="glass rounded-3xl p-8 text-center">
+                                    <div class="text-6xl font-bold text-emerald-400">${s.fiftyPlus}</div>
+                                    <div class="text-sm tracking-widest text-cyan-400/80 mt-3">50+ SCORES</div>
+                                </div>
+                                <div class="glass rounded-3xl p-8 text-center">
+                                    <div class="text-6xl font-bold text-amber-400">${s.hundredPlus}</div>
+                                    <div class="text-sm tracking-widest text-cyan-400/80 mt-3">100+ SCORES</div>
+                                </div>
+                            </div>
+
+                            <!-- Badges -->
+                            <div class="mt-8 flex flex-wrap gap-3">
+                                ${s.fiftyPlus >= 3 ? '<div class="glass px-5 py-2 rounded-2xl text-amber-400 flex items-center gap-2"><i class="fas fa-trophy"></i> 50+ HATTRICK</div>' : ''}
+                                ${s.hundredPlus >= 1 ? '<div class="glass px-5 py-2 rounded-2xl text-yellow-400 flex items-center gap-2"><i class="fas fa-star"></i> HIGH MARK AWARD</div>' : ''}
+                                ${s.average < 65 ? '<div class="glass px-5 py-2 rounded-2xl text-red-400 flex items-center gap-2"><i class="fas fa-skull"></i> LOW MARK SHAME</div>' : ''}
+                            </div>
+
+                            <!-- Old Dialogue Box Style -->
+                            <div class="mt-8 p-6 glass rounded-3xl border-l-4 border-red-500 bg-red-950/30">
+                                <p class="text-red-400 text-xl leading-relaxed">"${harshInsights[key]}"</p>
+                            </div>
+                        </div>
+
+                        <div class="w-full md:w-80 flex-shrink-0">
+                            <img src="${s.image}" class="w-full h-80 object-cover rounded-3xl shadow-2xl border border-cyan-400/30">
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('subject-card').innerHTML = html;
+            document.getElementById('overview').classList.add('hidden');
+            document.getElementById('subject-view').classList.remove('hidden');
+        }
+
+        function logout() {
+            if (confirm("End current session?")) location.reload();
+        }
+
+        document.getElementById('password-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') attemptLogin();
+        });
+
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+                document.getElementById('login-card').classList.remove('hidden');
+            }, 1600);
+        };
+    </script>
+</body>
+</html>
